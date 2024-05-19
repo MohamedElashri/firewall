@@ -51,9 +51,15 @@ There are two methods to install Firewall:
    sudo ./install_firewall.sh
    ```
 
+  Or you can run the following command to download and execute the installation script in one step:
+
+  ```
+    wget -O - https://github.com/MohamedElashri/firewall/raw/main/install_firewall.sh | sudo bash
+  ```
+
    The script will download the `firewall.sh` script, make it executable, and move it to the `/usr/local/bin/` directory.
 
-4. After the installation is complete, you can use the `firewall` command from the terminal to manage UFW.
+1. After the installation is complete, you can use the `firewall` command from the terminal to manage UFW.
 
 ## Usage
 
