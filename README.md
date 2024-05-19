@@ -1,6 +1,6 @@
- # Firewall - UFW CLI Manager
+# Firewall - UFW CLI Manager
 
-Firewall - UFW CLI Manager is a user-friendly command-line interface for managing the Uncomplicated Firewall (UFW) on Debian and Ubuntu systems. It provides a simplified syntax and an intuitive set of commands to control UFW, making it easier to configure and manage firewall rules.
+Firewall - UFW CLI Manager is a user-friendly command-line interface for managing the `ufw` firewall on Debian and Ubuntu systems. It provides a simplified syntax and an intuitive set of commands to control `ufw`, making it easier to configure and manage firewall rules.
 
 ## Features
 
@@ -16,6 +16,10 @@ Firewall - UFW CLI Manager is a user-friendly command-line interface for managin
 
 ## Installation
 
+There are two methods to install the UFW CLI Manager:
+
+### Method 1: Manual Installation
+
 1. Download the `firewall.sh` script from the repository.
 
 2. Make the script executable by running the following command:
@@ -30,9 +34,30 @@ Firewall - UFW CLI Manager is a user-friendly command-line interface for managin
 
 4. You can now use the `firewall` command from the terminal to manage UFW.
 
+### Method 2: Automated Installation
+
+1. Download the `install_firewall.sh` script from the repository:
+   ```
+   wget https://github.com/MohamedElashri/firewall/raw/main/install_firewall.sh
+   ```
+
+2. Make the installation script executable:
+   ```
+   chmod +x install_firewall.sh
+   ```
+
+3. Run the installation script with sudo or as root:
+   ```
+   sudo ./install_firewall.sh
+   ```
+
+   The script will download the `firewall.sh` script, make it executable, and move it to the `/usr/local/bin/` directory.
+
+4. After the installation is complete, you can use the `firewall` command from the terminal to manage UFW.
+
 ## Usage
 
-The UFW CLI Manager provides a set of commands to manage the firewall. Here's a table of the available commands:
+The `ufw` CLI Manager provides a set of commands to manage the firewall. Here's a table of the available commands:
 
 | Command                           | Description                                                   |
 |-----------------------------------|---------------------------------------------------------------|
@@ -96,20 +121,20 @@ The UFW CLI Manager provides a set of commands to manage the firewall. Here's a 
 
 ## Uninstallation
 
-To uninstall the UFW CLI Manager, simply remove the `firewall` script from the directory where it was installed. For example:
+To uninstall the `ufw` CLI Manager, simply remove the `firewall` script from the directory where it was installed. For example:
 ```
 sudo rm /usr/local/bin/firewall
 ```
 
 ## Security Considerations
 
-- The UFW CLI Manager script includes input validation and error handling to ensure the correctness of the provided arguments.
+- Firewall - `ufw` CLI Manager script includes input validation and error handling to ensure the correctness of the provided arguments.
 - Firewall changes are logged to the `/var/log/firewall.log` file for auditing purposes. Make sure to regularly monitor this file for any suspicious activities.
-- The script requires sudo or root privileges to execute UFW commands. Ensure that only authorized users have access to the script and the necessary privileges.
+- The script requires sudo or root privileges to execute `ufw` commands. Ensure that only authorized users have access to the script and the necessary privileges.
 
 ## Disclaimer
 
-While the UFW CLI Manager aims to simplify firewall management, it is essential to understand the implications of the firewall rules being applied. Incorrectly configured firewall rules may result in unintended consequences, such as blocking legitimate traffic or exposing your system to security risks. Use this script responsibly and review the firewall rules carefully before applying them.
+While Firewall - UFW CLI Manager aims to simplify firewall management, it is essential to understand the implications of the firewall rules being applied. Incorrectly configured firewall rules may result in unintended consequences, such as blocking legitimate traffic or exposing your system to security risks. Use this script responsibly and review the firewall rules carefully before applying them.
 
 ## License
 
@@ -117,7 +142,7 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Acknowledgements
 
-The UFW CLI Manager script is built on top of the UFW package and utilizes its underlying functionality. I would like to acknowledge the developers and maintainers of UFW for their excellent work.
+The UFW CLI Manager script is built on top of the `ufw` firewall package and utilizes its underlying functionality. I would like to acknowledge the developers and maintainers of `ufw` for their excellent work.
 
 ## Contributing
 
