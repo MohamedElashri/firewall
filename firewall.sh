@@ -26,8 +26,8 @@ usage() {
     echo "  deny port <port> [tcp|udp]   Deny incoming traffic on a specific port or port range"
     echo "  allow out <port> [tcp|udp]   Allow outgoing traffic on a specific port or port range"
     echo "  deny out <port> [tcp|udp]    Deny outgoing traffic on a specific port or port range"
-    echo "  allow ip <ip>             Allow traffic from a specific IP address or subnet"
-    echo "  deny ip <ip>              Deny traffic from a specific IP address or subnet"
+    echo "  allow ip <ip|any>         Allow traffic from a specific IP address, subnet, or 'any' for all IPs"
+    echo "  deny ip <ip|any>          Deny traffic from a specific IP address, subnet, or 'any' for all IPs"
     echo "  app list                  List all available application profiles"
     echo "  app info <profile>        Display information about a specific application profile"
     echo "  app allow <profile>       Allow traffic based on a predefined application profile"
@@ -45,29 +45,28 @@ rule_exists() {
     sudo ufw status | grep -q "$rule"
 }
 
-# Function to validate port number or "all"
+# Function to validate port number
 validate_port() {
     local port="$1"
-    if [ "$port" != "all" ]; then
-        if ! [[ "$port" =~ ^[0-9]+$ ]] || [ "$port" -lt 1 ] || [ "$port" -gt 65535 ]; then
-            echo "Invalid port number: $port. Please provide a valid port between 1 and 65535 or 'all'."
-            return 1
-        fi
+    if ! [[ "$port" =~ ^[0-9]+$ ]] || [ "$port" -lt 1 ] || [ "$port" -gt 65535 ]; then
+        echo "Invalid port number: $port. Please provide a valid port between 1 and 65535."
+        return 1
     fi
 }
 
-# Function to validate IP address (IPv4 and IPv6) or "all"
+# Function to validate IP address (IPv4 and IPv6) or "any"
 validate_ip() {
     local ip="$1"
-    if [ "$ip" != "all" ]; then
+    if [ "$ip" != "any" ]; then
         if ! echo "$ip" | grep -q -E '^([0-9]{1,3}\.){3}[0-9]{1,3}$'; then
             if ! echo "$ip" | grep -q -E '^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$'; then
-                echo "Invalid IP address: $ip. Please provide a valid IPv4 or IPv6 address or 'all'."
+                echo "Invalid IP address: $ip. Please provide a valid IPv4 or IPv6 address or 'any'."
                 return 1
             fi
         fi
     fi
 }
+
 # Function to log firewall changes
 log_changes() {
     local action="$1"
@@ -123,9 +122,7 @@ case "$1" in
     allow)
         case "$2" in
             port)
-                if [ "$3" == "all" ]; then
-                    rule="allow"
-                elif [ -z "$4" ]; then
+                if [ -z "$4" ]; then
                     rule="allow $3"
                 else
                     rule="allow $3/$4"
@@ -140,8 +137,24 @@ case "$1" in
                     log_changes "allow" "$rule"
                 fi
                 ;;
+            out)
+                if [ -z "$4" ]; then
+                    rule="allow out $3"
+                else
+                    rule="allow out $3/$4"
+                fi
+                if ! validate_port "$3"; then
+                    exit 1
+                fi
+                if rule_exists "$rule"; then
+                    echo "Rule '$rule' already exists. Use 'firewall list' to check existing rules."
+                else
+                    sudo ufw $rule
+                    log_changes "allow out" "$rule"
+                fi
+                ;;
             ip)
-                if [ "$3" == "all" ]; then
+                if [ "$3" == "any" ]; then
                     rule="allow from any"
                 else
                     rule="allow from $3"
@@ -156,15 +169,15 @@ case "$1" in
                     log_changes "allow" "$rule"
                 fi
                 ;;
-            # ... (previous code remains the same)
+            *)
+                echo "Invalid allow command. Use 'firewall allow port|out|ip'."
+                ;;
         esac
         ;;
     deny)
         case "$2" in
             port)
-                if [ "$3" == "all" ]; then
-                    rule="deny"
-                elif [ -z "$4" ]; then
+                if [ -z "$4" ]; then
                     rule="deny $3"
                 else
                     rule="deny $3/$4"
@@ -179,8 +192,24 @@ case "$1" in
                     log_changes "deny" "$rule"
                 fi
                 ;;
+            out)
+                if [ -z "$4" ]; then
+                    rule="deny out $3"
+                else
+                    rule="deny out $3/$4"
+                fi
+                if ! validate_port "$3"; then
+                    exit 1
+                fi
+                if rule_exists "$rule"; then
+                    echo "Rule '$rule' already exists. Use 'firewall list' to check existing rules."
+                else
+                    sudo ufw $rule
+                    log_changes "deny out" "$rule"
+                fi
+                ;;
             ip)
-                if [ "$3" == "all" ]; then
+                if [ "$3" == "any" ]; then
                     rule="deny from any"
                 else
                     rule="deny from $3"
@@ -195,7 +224,9 @@ case "$1" in
                     log_changes "deny" "$rule"
                 fi
                 ;;
-            # ... (previous code remains the same)
+            *)
+                echo "Invalid deny command. Use 'firewall deny port|out|ip'."
+                ;;
         esac
         ;;
     app)
