@@ -74,6 +74,16 @@ log_changes() {
     echo "$timestamp - $user - $action - $rule" >> /var/log/firewall.log
 }
 
+# Log file path
+LOG_FILE="/var/log/firewall.log"
+
+# Check if the log file exists, create it if necessary
+if [ ! -f "$LOG_FILE" ]; then
+    sudo touch "$LOG_FILE"
+    sudo chown root:adm "$LOG_FILE"
+    sudo chmod 640 "$LOG_FILE"
+fi
+
 # Parse command line arguments
 case "$1" in
     start)
