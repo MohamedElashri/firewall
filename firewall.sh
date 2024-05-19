@@ -28,7 +28,7 @@ usage() {
     echo "  deny out <port> [tcp|udp]    Deny outgoing traffic on a specific port or port range"
     echo "  allow ip <ip|any>         Allow traffic from a specific IP address, subnet, or 'any' for all IPs"
     echo "  deny ip <ip|any>          Deny traffic from a specific IP address, subnet, or 'any' for all IPs"
-    echo "  delete <rule_number>      Delete a specific firewall rule by its number"
+    echo "  delete <rule_number/s>      Delete a specific firewall rule by its number"
     echo "  app list                  List all available application profiles"
     echo "  app info <profile>        Display information about a specific application profile"
     echo "  app allow <profile>       Allow traffic based on a predefined application profile"
@@ -49,8 +49,10 @@ rule_exists() {
 # Function to validate port number
 validate_port() {
     local port="$1"
-    if ! [[ "$port" =~ ^[0-9]+$ ]] || [ "$port" -lt 1 ] || [ "$port" -gt 65535 ]; then
-        echo "Invalid port number: $port. Please provide a valid port between 1 and 65535."
+    if [ "$port" == "any" ]; then
+        return 0  # Skip the numeric check if 'any' is specified
+    elif ! [[ "$port" =~ ^[0-9]+$ ]] || [ "$port" -lt 1 ] || [ "$port" -gt 65535 ]; then
+        echo "Invalid port number: $port. Please provide a valid port between 1 and 65535 or 'any'."
         return 1
     fi
 }
@@ -72,11 +74,14 @@ validate_ip() {
 log_changes() {
     local action="$1"
     local rule="$2"
-    local timestamp=$(date +"%Y-%m-%d %H:%M:%S")
-    local user=$(whoami)
+    local timestamp
+    local user
+
+    timestamp=$(date +"%Y-%m-%d %H:%M:%S")
+    user=$(whoami)
+
     echo "$timestamp - $user - $action - $rule" >> /var/log/firewall.log
 }
-
 # Log file path
 LOG_FILE="/var/log/firewall.log"
 
@@ -123,51 +128,43 @@ case "$1" in
     allow)
         case "$2" in
             port)
-                if [ -z "$4" ]; then
-                    rule="allow $3"
+                if [ "$3" == "any" ]; then
+                    rule="allow from any to any"
                 else
-                    rule="allow $3/$4"
-                fi
-                if ! validate_port "$3"; then
-                    exit 1
+                    if ! validate_port "$3"; then
+                        exit 1
+                    fi
+                    if [ -z "$4" ]; then
+                        rule="allow $3"
+                    else
+                        rule="allow $3/$4"
+                    fi
                 fi
                 if rule_exists "$rule"; then
                     echo "Rule '$rule' already exists. Use 'firewall list' to check existing rules."
                 else
-                    sudo ufw $rule
+                    sudo ufw "$rule"
                     log_changes "allow" "$rule"
                 fi
                 ;;
             out)
-                if [ -z "$4" ]; then
-                    rule="allow out $3"
-                else
-                    rule="allow out $3/$4"
-                fi
-                if ! validate_port "$3"; then
-                    exit 1
-                fi
-                if rule_exists "$rule"; then
-                    echo "Rule '$rule' already exists. Use 'firewall list' to check existing rules."
-                else
-                    sudo ufw $rule
-                    log_changes "allow out" "$rule"
-                fi
-                ;;
-            ip)
                 if [ "$3" == "any" ]; then
-                    rule="allow from any"
+                    rule="allow out from any to any"
                 else
-                    rule="allow from $3"
-                fi
-                if ! validate_ip "$3"; then
-                    exit 1
+                    if ! validate_port "$3"; then
+                        exit 1
+                    fi
+                    if [ -z "$4" ]; then
+                        rule="allow out $3"
+                    else
+                        rule="allow out $3/$4"
+                    fi
                 fi
                 if rule_exists "$rule"; then
                     echo "Rule '$rule' already exists. Use 'firewall list' to check existing rules."
                 else
-                    sudo ufw $rule
-                    log_changes "allow" "$rule"
+                    sudo ufw "$rule"
+                    log_changes "allow out" "$rule"
                 fi
                 ;;
             *)
@@ -175,54 +172,47 @@ case "$1" in
                 ;;
         esac
         ;;
+
     deny)
         case "$2" in
             port)
-                if [ -z "$4" ]; then
-                    rule="deny $3"
+                if [ "$3" == "any" ]; then
+                    rule="deny from any to any"
                 else
-                    rule="deny $3/$4"
-                fi
-                if ! validate_port "$3"; then
-                    exit 1
+                    if ! validate_port "$3"; then
+                        exit 1
+                    fi
+                    if [ -z "$4" ]; then
+                        rule="deny $3"
+                    else
+                        rule="deny $3/$4"
+                    fi
                 fi
                 if rule_exists "$rule"; then
                     echo "Rule '$rule' already exists. Use 'firewall list' to check existing rules."
                 else
-                    sudo ufw $rule
+                    sudo ufw "$rule"
                     log_changes "deny" "$rule"
                 fi
                 ;;
             out)
-                if [ -z "$4" ]; then
-                    rule="deny out $3"
-                else
-                    rule="deny out $3/$4"
-                fi
-                if ! validate_port "$3"; then
-                    exit 1
-                fi
-                if rule_exists "$rule"; then
-                    echo "Rule '$rule' already exists. Use 'firewall list' to check existing rules."
-                else
-                    sudo ufw $rule
-                    log_changes "deny out" "$rule"
-                fi
-                ;;
-            ip)
                 if [ "$3" == "any" ]; then
-                    rule="deny from any"
+                    rule="deny out from any to any"
                 else
-                    rule="deny from $3"
-                fi
-                if ! validate_ip "$3"; then
-                    exit 1
+                    if ! validate_port "$3"; then
+                        exit 1
+                    fi
+                    if [ -z "$4" ]; then
+                        rule="deny out $3"
+                    else
+                        rule="deny out $3/$4"
+                    fi
                 fi
                 if rule_exists "$rule"; then
                     echo "Rule '$rule' already exists. Use 'firewall list' to check existing rules."
                 else
-                    sudo ufw $rule
-                    log_changes "deny" "$rule"
+                    sudo ufw "$rule"
+                    log_changes "deny out" "$rule"
                 fi
                 ;;
             *)
@@ -260,7 +250,7 @@ case "$1" in
             IFS=',' read -r -a rule_numbers <<< "$cleaned_input"
 
             # Sort the rule numbers in descending order to prevent reordering issues
-            IFS=$'\n' sorted_rule_numbers=($(sort -r <<<"${rule_numbers[*]}"))
+            mapfile -t sorted_rule_numbers < <(sort -r <<<"${rule_numbers[*]}")
             unset IFS
 
             # Iterate over each rule number and delete
