@@ -16,7 +16,7 @@ Firewall - UFW CLI Manager is a user-friendly command-line interface for managin
 
 ## Installation
 
-There are two methods to install the UFW CLI Manager:
+There are two methods to install Firewall:
 
 ### Method 1: Manual Installation
 
