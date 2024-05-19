@@ -253,18 +253,23 @@ case "$1" in
         ;;
     delete)
         if [ -z "$2" ]; then
-            echo "Please provide the rule number to delete."
+            echo "Please provide the rule number(s) to delete."
         else
-            rule_number="$2"
-            if ! [[ "$rule_number" =~ ^[0-9]+$ ]]; then
-                echo "Invalid rule number: $rule_number. Please provide a valid rule number."
-            else
-                sudo ufw --force delete "$rule_number"
-                log_changes "delete" "Rule $rule_number"
-                echo "Rule $rule_number has been deleted."
-            fi
+            # Split the rule numbers on commas and remove brackets if present
+            IFS=',' read -r -a rule_numbers <<< "${2//[\[\]]/}"
+
+            # Iterate over each rule number and delete
+            for rule_number in "${rule_numbers[@]}"; do
+                if ! [[ "$rule_number" =~ ^[0-9]+$ ]]; then
+                    echo "Invalid rule number: $rule_number. Please provide valid rule numbers."
+                else
+                    sudo ufw --force delete "$rule_number"
+                    log_changes "delete" "Rule $rule_number"
+                    echo "Rule $rule_number has been deleted."
+                fi
+            done
         fi
-        ;;        
+        ;;
     logging)
         case "$2" in
             on)
