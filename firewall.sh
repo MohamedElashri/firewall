@@ -255,8 +255,9 @@ case "$1" in
         if [ -z "$2" ]; then
             echo "Please provide the rule number(s) to delete."
         else
-            # Split the rule numbers on commas and remove brackets if present
-            IFS=',' read -r -a rule_numbers <<< "${2//[\[\]]/}"
+            # Replace '[' and ']' with nothing, and trim spaces, then split the string by commas
+            cleaned_input=$(echo "$2" | sed 's/[][]//g' | tr -d ' ')
+            IFS=',' read -r -a rule_numbers <<< "$cleaned_input"
 
             # Iterate over each rule number and delete
             for rule_number in "${rule_numbers[@]}"; do
