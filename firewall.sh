@@ -38,6 +38,7 @@ usage() {
     echo "  reset                     Reset the firewall to its default settings"
     echo "  backup [filename]         Backup the current firewall configuration to a file"
     echo "  restore <filename>        Restore the firewall configuration from a backup file"
+    echo "  nuke                      Reset all firewall rules to default and re-enable the firewall"
 }
 
 # Function to check if a rule already exists
@@ -95,7 +96,7 @@ fi
 # Parse command line arguments
 case "$1" in
     start)
-        sudo ufw enable
+        sudo ufw enable -y
         ;;
     stop)
         sudo ufw disable
@@ -139,7 +140,7 @@ case "$1" in
                 if rule_exists "$rule"; then
                     echo "Rule '$rule' already exists. Use 'firewall list' to check existing rules."
                 else
-                    sudo ufw $rule
+                    sudo ufw "$rule"
                     log_changes "allow" "$rule"
                 fi
                 ;;
@@ -155,7 +156,7 @@ case "$1" in
                 if rule_exists "$rule"; then
                     echo "Rule '$rule' already exists. Use 'firewall list' to check existing rules."
                 else
-                    sudo ufw $rule
+                    sudo ufw "$rule"
                     log_changes "allow out" "$rule"
                 fi
                 ;;
@@ -179,7 +180,7 @@ case "$1" in
                 if rule_exists "$rule"; then
                     echo "Rule '$rule' already exists. Use 'firewall list' to check existing rules."
                 else
-                    sudo ufw $rule
+                    sudo ufw "$rule"
                     log_changes "deny" "$rule"
                 fi
                 ;;
@@ -195,7 +196,7 @@ case "$1" in
                 if rule_exists "$rule"; then
                     echo "Rule '$rule' already exists. Use 'firewall list' to check existing rules."
                 else
-                    sudo ufw $rule
+                    sudo ufw "$rule"
                     log_changes "deny out" "$rule"
                 fi
                 ;;
@@ -284,9 +285,9 @@ case "$1" in
     nuke)
         echo "Resetting all firewall rules to default..."
         sudo ufw disable
-        sudo ufw reset
+        sudo ufw reset -y
         echo "Re-enabling firewall with default settings..."
-        sudo ufw enable
+        sudo ufw enable -y
         log_changes "nuke" "All rules reset to default, firewall re-enabled with no rules."
         echo "Firewall rules have been nuked and reset to default state."
         ;;        
