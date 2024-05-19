@@ -72,6 +72,7 @@ Firewall provides a set of commands to manage the firewall. Here's a table of th
 | `firewall deny out <port> [tcp,udp]`  | Deny outgoing traffic on a specific port or port range   |
 | `firewall allow ip <ip>`          | Allow traffic from a specific IP address or subnet           |
 | `firewall deny ip <ip>`           | Deny traffic from a specific IP address or subnet            |
+| `firewall delete <rule_number/s>`   | Delete a specific firewall rule/s by its rule number           |
 | `firewall app list`               | List all available application profiles                      |
 | `firewall app info <profile>`     | Display information about a specific application profile     |
 | `firewall app allow <profile>`    | Allow traffic based on a predefined application profile      |
@@ -81,47 +82,71 @@ Firewall provides a set of commands to manage the firewall. Here's a table of th
 | `firewall reset`                  | Reset the firewall to its default settings                   |
 | `firewall backup [filename]`      | Backup the current firewall configuration to a file          |
 | `firewall restore <filename>`     | Restore the firewall configuration from a backup file        |
+| `firewall nuke`                   | Nuke all rules and reset the firewall to its default settings |
 
 ## Examples
 
 - Enable the firewall:
+
   ```
   firewall start
   ```
 
 - Allow incoming SSH traffic on port 22:
+
   ```
   firewall allow port 22
   ```
 
 - Deny outgoing traffic on port 80 for the TCP protocol:
+
   ```
   firewall deny out 80 tcp
   ```
 
 - Allow traffic from a specific IP address:
+
   ```
   firewall allow ip 192.168.0.10
   ```
 
 - List all available application profiles:
+
   ```
   firewall app list
   ```
 
 - Enable firewall logging:
+
   ```
   firewall logging on
   ```
 
 - Backup the current firewall configuration to a file:
+
   ```
   firewall backup firewall_config.bak
   ```
 
+- Restore the firewall configuration from a backup file:
+
+  ```
+  firewall restore firewall_config.bak
+  ```
+- Nuke all rules and reset the firewall to its default settings:
+
+  ```
+  firewall nuke
+  ```    
+
+- Deny all ports 
+  
+  ```
+  firewall deny port any
+  ```
 ## Uninstallation
 
-To uninstall the `ufw` CLI Manager, simply remove the `firewall` script from the directory where it was installed. For example:
+To uninstall Firewall, simply remove the `firewall` script from the directory where it was installed. For example:
 ```
 sudo rm /usr/local/bin/firewall
 ```
