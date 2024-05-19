@@ -28,6 +28,7 @@ usage() {
     echo "  deny out <port> [tcp|udp]    Deny outgoing traffic on a specific port or port range"
     echo "  allow ip <ip|any>         Allow traffic from a specific IP address, subnet, or 'any' for all IPs"
     echo "  deny ip <ip|any>          Deny traffic from a specific IP address, subnet, or 'any' for all IPs"
+    echo "  delete <rule_number>      Delete a specific firewall rule by its number"
     echo "  app list                  List all available application profiles"
     echo "  app info <profile>        Display information about a specific application profile"
     echo "  app allow <profile>       Allow traffic based on a predefined application profile"
@@ -250,6 +251,20 @@ case "$1" in
                 ;;
         esac
         ;;
+    delete)
+        if [ -z "$2" ]; then
+            echo "Please provide the rule number to delete."
+        else
+            rule_number="$2"
+            if ! [[ "$rule_number" =~ ^[0-9]+$ ]]; then
+                echo "Invalid rule number: $rule_number. Please provide a valid rule number."
+            else
+                sudo ufw --force delete "$rule_number"
+                log_changes "delete" "Rule $rule_number"
+                echo "Rule $rule_number has been deleted."
+            fi
+        fi
+        ;;        
     logging)
         case "$2" in
             on)
