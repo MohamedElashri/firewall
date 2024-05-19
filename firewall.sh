@@ -134,36 +134,28 @@ case "$1" in
                     if ! validate_port "$3"; then
                         exit 1
                     fi
-                    if [ -z "$4" ]; then
-                        rule="allow $3"
-                    else
-                        rule="allow $3/$4"
-                    fi
+                    rule="allow $3 ${4:-tcp}"
                 fi
                 if rule_exists "$rule"; then
                     echo "Rule '$rule' already exists. Use 'firewall list' to check existing rules."
                 else
-                    sudo ufw "$rule"
+                    sudo ufw $rule
                     log_changes "allow" "$rule"
                 fi
                 ;;
             out)
                 if [ "$3" == "any" ]; then
-                    rule="allow out from any to any"
+                    rule="allow out on any"
                 else
                     if ! validate_port "$3"; then
                         exit 1
                     fi
-                    if [ -z "$4" ]; then
-                        rule="allow out $3"
-                    else
-                        rule="allow out $3/$4"
-                    fi
+                    rule="allow out on $3 ${4:-tcp}"
                 fi
                 if rule_exists "$rule"; then
                     echo "Rule '$rule' already exists. Use 'firewall list' to check existing rules."
                 else
-                    sudo ufw "$rule"
+                    sudo ufw $rule
                     log_changes "allow out" "$rule"
                 fi
                 ;;
@@ -182,36 +174,28 @@ case "$1" in
                     if ! validate_port "$3"; then
                         exit 1
                     fi
-                    if [ -z "$4" ]; then
-                        rule="deny $3"
-                    else
-                        rule="deny $3/$4"
-                    fi
+                    rule="deny $3 ${4:-tcp}"
                 fi
                 if rule_exists "$rule"; then
                     echo "Rule '$rule' already exists. Use 'firewall list' to check existing rules."
                 else
-                    sudo ufw "$rule"
+                    sudo ufw $rule
                     log_changes "deny" "$rule"
                 fi
                 ;;
             out)
                 if [ "$3" == "any" ]; then
-                    rule="deny out from any to any"
+                    rule="deny out on any"
                 else
                     if ! validate_port "$3"; then
                         exit 1
                     fi
-                    if [ -z "$4" ]; then
-                        rule="deny out $3"
-                    else
-                        rule="deny out $3/$4"
-                    fi
+                    rule="deny out on $3 ${4:-tcp}"
                 fi
                 if rule_exists "$rule"; then
                     echo "Rule '$rule' already exists. Use 'firewall list' to check existing rules."
                 else
-                    sudo ufw "$rule"
+                    sudo ufw $rule
                     log_changes "deny out" "$rule"
                 fi
                 ;;
@@ -245,27 +229,19 @@ case "$1" in
         if [ -z "$2" ]; then
             echo "Please provide the rule number(s) to delete."
         else
-            # Replace '[' and ']' with nothing, and trim spaces, then split the string by commas
-            cleaned_input=$(echo "$2" | sed 's/[][]//g' | tr -d ' ')
-            IFS=',' read -r -a rule_numbers <<< "$cleaned_input"
-
-            # Sort the rule numbers in descending order to prevent reordering issues
-            mapfile -t sorted_rule_numbers < <(sort -r <<<"${rule_numbers[*]}")
-            unset IFS
-
-            # Iterate over each rule number and delete
-            for rule_number in "${sorted_rule_numbers[@]}"; do
+            cleaned_input=$(echo "$2" | tr -d '[]' | tr ',' '\n' | sort -nr)
+            for rule_number in $cleaned_input; do
                 if ! [[ "$rule_number" =~ ^[0-9]+$ ]]; then
                     echo "Invalid rule number: $rule_number. Please provide valid rule numbers."
-                else
-                    sudo ufw --force delete "$rule_number"
-                    log_changes "delete" "Rule $rule_number"
-                    echo "Rule $rule_number has been deleted."
+                    continue
                 fi
+                sudo ufw --force delete "$rule_number"
+                log_changes "delete" "Rule $rule_number"
+                echo "Rule $rule_number has been deleted."
             done
         fi
         ;;
-    logging)
+        logging)
         case "$2" in
             on)
                 sudo ufw logging on
