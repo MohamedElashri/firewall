@@ -259,8 +259,12 @@ case "$1" in
             cleaned_input=$(echo "$2" | sed 's/[][]//g' | tr -d ' ')
             IFS=',' read -r -a rule_numbers <<< "$cleaned_input"
 
+            # Sort the rule numbers in descending order to prevent reordering issues
+            IFS=$'\n' sorted_rule_numbers=($(sort -r <<<"${rule_numbers[*]}"))
+            unset IFS
+
             # Iterate over each rule number and delete
-            for rule_number in "${rule_numbers[@]}"; do
+            for rule_number in "${sorted_rule_numbers[@]}"; do
                 if ! [[ "$rule_number" =~ ^[0-9]+$ ]]; then
                     echo "Invalid rule number: $rule_number. Please provide valid rule numbers."
                 else
