@@ -285,9 +285,9 @@ case "$1" in
     nuke)
         echo "Resetting all firewall rules to default..."
         sudo ufw disable
-        sudo ufw reset -y
+        echo "y" | sudo ufw reset
         echo "Re-enabling firewall with default settings..."
-        sudo ufw enable -y
+        echo "y" | sudo ufw enable
         log_changes "nuke" "All rules reset to default, firewall re-enabled with no rules."
         echo "Firewall rules have been nuked and reset to default state."
         ;;        
