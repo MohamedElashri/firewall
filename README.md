@@ -1,6 +1,6 @@
 # Firewall - UFW CLI Manager
 
-Firewall - UFW CLI Manager is a user-friendly command-line interface for managing the `ufw` firewall on Debian and Ubuntu systems. It provides a simplified syntax and an intuitive set of commands to control `ufw`, making it easier to configure and manage firewall rules.
+Firewall is a user-friendly command-line interface for managing the `ufw` firewall on Debian and Ubuntu systems. It provides a simplified syntax and an intuitive set of commands to control `ufw`, making it easier to configure and manage firewall rules.
 
 ## Features
 
@@ -57,7 +57,7 @@ There are two methods to install Firewall:
 
 ## Usage
 
-The `ufw` CLI Manager provides a set of commands to manage the firewall. Here's a table of the available commands:
+Firewall provides a set of commands to manage the firewall. Here's a table of the available commands:
 
 | Command                           | Description                                                   |
 |-----------------------------------|---------------------------------------------------------------|
@@ -128,13 +128,13 @@ sudo rm /usr/local/bin/firewall
 
 ## Security Considerations
 
-- Firewall - `ufw` CLI Manager script includes input validation and error handling to ensure the correctness of the provided arguments.
+- Firewall includes input validation and error handling to ensure the correctness of the provided arguments.
 - Firewall changes are logged to the `/var/log/firewall.log` file for auditing purposes. Make sure to regularly monitor this file for any suspicious activities.
 - The script requires sudo or root privileges to execute `ufw` commands. Ensure that only authorized users have access to the script and the necessary privileges.
 
 ## Disclaimer
 
-While Firewall - UFW CLI Manager aims to simplify firewall management, it is essential to understand the implications of the firewall rules being applied. Incorrectly configured firewall rules may result in unintended consequences, such as blocking legitimate traffic or exposing your system to security risks. Use this script responsibly and review the firewall rules carefully before applying them.
+While Firewall aims to simplify firewall management, it is essential to understand the implications of the firewall rules being applied. Incorrectly configured firewall rules may result in unintended consequences, such as blocking legitimate traffic or exposing your system to security risks. Use this script responsibly and review the firewall rules carefully before applying them.
 
 ## License
 
